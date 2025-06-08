@@ -8,7 +8,7 @@
         createTable($options);
 
     if(isset($options["file"]))
-        iterateUsersCsv();
+        iterateUsersCsv($options);
     
     if(isset($options["help"]))
         showOptionsOrDirectives();
@@ -85,12 +85,90 @@
         exit("Users table already exists.\n**\n");
     }
 
-    function iterateUsersCsv() {
-        // TO DO:
-        // 1. Capture file name
-        // 2. Loop through CSV file
-        // 3. Save CSV data on to the database
+    function iterateUsersCsv($options) {
+        echo "**\nProcessing data...\n";
+        $file = $options["file"] ?? "";
+        $mysql_parameters_arr = mySqlParametersCheck($options);
+        $db_conn = connectMySql($mysql_parameters_arr);
+        $db_selected = selectMySqlDatabaseIfExists($db_conn);
+
+        if(!file_exists($file))
+            exit("File not found.\n**\n");
+
+        $path_parts = pathinfo($file);
+        if($path_parts["extension"] !== "csv")
+            exit("Please use CSV files.\n**\n");
+
+        if(($handle = fopen($file, "r")) !== FALSE) {
+            $header_data_arr = fgetcsv($handle, 0, ",", '"', "\\");
+            $index = getHeaderIndex($header_data_arr);
+
+            if(!isset($index["name"], $index["surname"], $index["email"]))
+                exit("CSV is missing a column name/username/email.\n**\n");
+
+            $db_conn->begin_transaction();
+            while(($user_data = fgetcsv($handle, 0, ",", '"', "\\")) !== FALSE) {
+                $name = formatNameAndSurname($user_data[$index["name"]]);
+                $surname = formatNameAndSurname($user_data[$index["surname"]]);
+                $email = validateEmail($user_data[$index["email"]]);
+                echo "name: " . $name . " surname: " . $surname . " email: " . $user_data[$index["email"]] . "\n";
+                if($name && $surname && $email) {
+                    insertUserDataIntoDatabase($db_conn, $name, $surname, $email);
+                    echo "Valid.";
+                } else {
+                    echo "Contains invalid data - SKIPPED.";
+                }
+                echo "\n\n";
+            }
+
+            try {
+                $db_conn->commit();
+            } catch(Exception $e) {
+                $db_conn->rollback();
+                echo "Data insert failed: " . $e->getMessage() . "\n";
+            }
+            fclose($handle);
+            exit("Processing data completed.\n**\n");
+        }
+
         exit("capture file, loop through csv and save to database.\n");
+    }
+
+    function getHeaderIndex($header_data_arr) {
+        $index = [];
+        foreach($header_data_arr as $i => $header_name) {
+            $header_name = trim($header_name);
+            if($header_name === "name")
+                $index["name"] = $i;
+            if($header_name === "surname")
+                $index["surname"] = $i;
+            if($header_name === "email")
+                $index["email"] = $i;
+        }
+        return $index;
+    }
+
+    function formatNameAndSurname($name_or_surname) {
+        $cleaned_name_or_surname = ucfirst(strtolower(trim($name_or_surname)));
+        return preg_replace("/[^A-Za-z0-9\-]/", "", $cleaned_name_or_surname);
+    }
+
+    function validateEmail($email) {
+        if(filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return strtolower($email);
+        }
+        return false;
+    }
+
+    function insertUserDataIntoDatabase($db_conn, $name, $surname, $email) {
+        $sql = "INSERT INTO users (name, surname, email) VALUES (?, ?, ?);";
+        try {
+            $stmt = $db_conn->prepare($sql);
+            $stmt->bind_param("sss", $name, $surname, $email);
+            $stmt->execute();
+        } catch(Exception $e) {
+            echo $e->getMessage() . " NOT INSERTED.\n";
+        }
     }
 
     function showOptionsOrDirectives() {
