@@ -124,14 +124,14 @@
                 $name = formatNameAndSurname($user_data[$index["name"]]);
                 $surname = formatNameAndSurname($user_data[$index["surname"]]);
                 $email = validateEmail($user_data[$index["email"]]);
-                echo "name: " . $name . " surname: " . $surname . " email: " . $user_data[$index["email"]] . "\n";
+                echo "name: " . $name . " surname: " . $surname . " email: " . strtolower($user_data[$index["email"]]) . "\n";
                 if($name && $surname && $email) {
                     if(!$dry_run) {
                         insertUserDataIntoDatabase($db_conn, $name, $surname, $email);
                     }
-                    echo "Valid.";
+                    echo "Valid";
                 } else {
-                    echo "Contains invalid data - SKIPPED.";
+                    echo "SKIPPED\nInvalid";
                 }
                 echo "\n\n";
             }
@@ -153,7 +153,7 @@
     function getHeaderIndex($header_data_arr) {
         $index = [];
         foreach($header_data_arr as $i => $header_name) {
-            $header_name = trim($header_name);
+            $header_name = strtolower(trim($header_name));
             if($header_name === "name")
                 $index["name"] = $i;
             if($header_name === "surname")
@@ -170,8 +170,9 @@
     }
 
     function validateEmail($email) {
-        if(filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return strtolower($email);
+        $clean_email = strtolower(trim($email));
+        if(filter_var($clean_email, FILTER_VALIDATE_EMAIL)) {
+            return $clean_email;
         }
         return false;
     }
@@ -182,8 +183,9 @@
             $stmt = $db_conn->prepare($sql);
             $stmt->bind_param("sss", $name, $surname, $email);
             $stmt->execute();
+            echo "INSERTED \n";
         } catch(Exception $e) {
-            echo $e->getMessage() . " NOT INSERTED.\n";
+            echo $e->getMessage() . " - SKIPPED.\n";
         }
     }
 
