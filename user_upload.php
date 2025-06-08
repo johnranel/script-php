@@ -30,8 +30,14 @@
     }
 
     function showOptionsOrDirectives() {
-        // TO DO:
-        // 1. Show options
-        exit("show list of options/directives here.\n");
+        $stringCommands = "**\nList of available options or directives.\n";
+        $stringCommands .= "--file [csv file name] - this is the name of the CSV to be parsed\n";
+        $stringCommands .= "--create_table - this will cause the MySQL users table to be built (and no further action will be taken)\n";
+        $stringCommands .= "--dry_run - this will be used with the --file directive in case we want to run the script but not insert into the DB. All other functions will be executed, but the database won't be altered\n";
+        $stringCommands .= "-u - MySQL username\n";
+        $stringCommands .= "-p - MySQL password\n";
+        $stringCommands .= "-h - MySQL host\n";
+        $stringCommands .= "--help - which will output the above list of directives with details.\n**\n";
+        exit($stringCommands);
     }
 ?>
