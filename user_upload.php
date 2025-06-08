@@ -15,7 +15,15 @@
 
     function createTable($options) {
         echo "**\nProcessing creation of database and user table...\n";
+        $dry_run = isset($options["dry_run"]);
         $mysql_parameters_arr = mySqlParametersCheck($options);
+        if($dry_run) {
+            echo "[SIMULATION]\n";
+            echo "Database created.\n";
+            echo "Users table created successfully.\n";
+            exit("**\n");
+        }
+
         $db_conn = connectMySql($mysql_parameters_arr);
         $db_selected = selectMySqlDatabaseIfExists($db_conn);
 
@@ -87,6 +95,11 @@
 
     function iterateUsersCsv($options) {
         echo "**\nProcessing data...\n";
+        $dry_run = isset($options["dry_run"]);
+        if($dry_run) {
+            echo "[SIMULATION]\n";
+        }
+        
         $file = $options["file"] ?? "";
         $mysql_parameters_arr = mySqlParametersCheck($options);
         $db_conn = connectMySql($mysql_parameters_arr);
@@ -113,19 +126,22 @@
                 $email = validateEmail($user_data[$index["email"]]);
                 echo "name: " . $name . " surname: " . $surname . " email: " . $user_data[$index["email"]] . "\n";
                 if($name && $surname && $email) {
-                    insertUserDataIntoDatabase($db_conn, $name, $surname, $email);
+                    if(!$dry_run) {
+                        insertUserDataIntoDatabase($db_conn, $name, $surname, $email);
+                    }
                     echo "Valid.";
                 } else {
                     echo "Contains invalid data - SKIPPED.";
                 }
                 echo "\n\n";
             }
-
-            try {
-                $db_conn->commit();
-            } catch(Exception $e) {
-                $db_conn->rollback();
-                echo "Data insert failed: " . $e->getMessage() . "\n";
+            if(!$dry_run) {
+                try {
+                    $db_conn->commit();
+                } catch(Exception $e) {
+                    $db_conn->rollback();
+                    echo "Data insert failed: " . $e->getMessage() . "\n";
+                }
             }
             fclose($handle);
             exit("Processing data completed.\n**\n");
