@@ -97,3 +97,9 @@ name: John surname: Doe email: johndoe@example.com
 Duplicate entry - SKIPPED
 Valid
 ```
+
+## Notes
+
+- The script creates and uses a database named `catalyst` by default using the command `--create_table`.
+- Table name is fixed as `users`.
+- Sanitization and email validation are applied before insertion.
