@@ -1,4 +1,4 @@
-# PHP Script Database Importer
+# 1. PHP Script Database Importer
 
 Command-line PHP script to manage importing of user data from a parsed .CSV file.
 
@@ -103,3 +103,22 @@ Valid
 - The script creates and uses a database named `catalyst` by default using the command `--create_table`.
 - Table name is fixed as `users`.
 - Sanitization and email validation are applied before insertion.
+
+# 2. PHP Foobar
+
+Command-line PHP script that iterates through 1-100 and return foobar if current number is divisible by 3 and 5, foo if divisible by 3, bar if divisible by 5 and return the current number if not divisible by either 3 and 5.
+
+## Usage
+
+Using the command-line run the script using:
+```
+php foobar.php
+```
+
+## Output
+
+Sample output after running the script.
+
+```
+1, 2, foo, 4, bar, foo, 7, 8, foo, bar, 11, foo, 13, 14....
+```
