@@ -39,6 +39,7 @@ php user_upload.php [OPTIONS]
 | `-u`                   | MySQL username     |
 | `-p`                   | MySQL password     |
 | `-h`                   | MySQL host (e.g. localhost, 127.0.0.1, or Docker IP)     |
+| `-d`                   | MySQL database name     |
 | `--help`                      | this will output the above list of directives with details.|
 
 ### Required MySQL Options
@@ -46,6 +47,7 @@ php user_upload.php [OPTIONS]
 - `-u` MySQL username
 - `-p` MySQL password
 - `-h` MySQL host (e.g. localhost, 127.0.0.1, or Docker IP)
+- `-d` MySQL database name
 
 ## Examples
 
@@ -59,11 +61,11 @@ php user_upload.php --create_table -u root -p secret -h localhost
 ```
 3. Dry run import (No database insert)
 ```
-php user_upload.php --file users.csv -u root -p secret -h localhost --dry_run
+php user_upload.php --file users.csv -u root -p secret -h localhost -d sampleDB --dry_run
 ```
 4. Run import (Database insert)
 ```
-php user_upload.php --file users.csv -u root -p secret -h localhost
+php user_upload.php --file users.csv -u root -p secret -h localhost -d sampleDB
 ```
 
 ## CSV Format
@@ -90,7 +92,6 @@ Inserted
 Valid
 
 name: Jane surname: Smith email: janesmith@examp@le.com
-Contains invalid data - SKIPPED
 Invalid
 
 name: John surname: Doe email: johndoe@example.com
@@ -100,7 +101,6 @@ Valid
 
 ## Notes
 
-- The script creates and uses a database named `catalyst` by default using the command `--create_table`.
 - Table name is fixed as `users`.
 - Sanitization and email validation are applied before insertion.
 
